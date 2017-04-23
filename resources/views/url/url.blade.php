@@ -14,5 +14,6 @@
             <button :disabled="urlIsEmptyAndNotValid" v-on:click="submitUrl" type="submit" class="btn btn-default btn-block">Submit</button>
         </div>
     </div>
+    @include('url/error')
     @include('url/create')
 @endsection

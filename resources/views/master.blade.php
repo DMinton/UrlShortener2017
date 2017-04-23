@@ -18,6 +18,7 @@
     <body>
         <div id="urlform" class="container">
             @yield('content')
+            @yield('error')
             @yield('createUrl')
         </div>
     </body>
