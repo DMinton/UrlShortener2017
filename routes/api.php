@@ -13,6 +13,9 @@ use Illuminate\Http\Request;
 |
 */
 
-Route::middleware('auth:api')->get('/user', function (Request $request) {
-    return $request->user();
+Route::group(['namespace' => 'url'], function () {
+
+    Route::post('/create', 'UrlController@create');
+    Route::get('/topVisits/{number?}', 'UrlController@topVisits');
+
 });
