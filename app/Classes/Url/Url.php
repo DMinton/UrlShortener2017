@@ -16,11 +16,11 @@ class Url {
     public function findOrCreateShortenedUrl($url) {
         $urlObject = $this->findUrl($url);
 
-        if ($urlObject->isEmpty()) {
-            $urlObject = $this->createShortenedUrl($url);
+        if ($urlObject->isNotEmpty()) {
+            return $urlObject->first();
         }
 
-        return $urlObject->first();
+        return $this->createShortenedUrl($url);;
     }
 
     public function findShortenedUrl($shortened) {
@@ -55,7 +55,7 @@ class Url {
         $charactersLength = strlen($characters);
         $randomString = '';
         for ($i = 0; $i < $length; $i++) {
-            $randomString .= $characters[rand(0, $charactersLength - 1)];
+            $randomString .= $characters[mt_rand(0, $charactersLength - 1)];
         }
         return $randomString;
     }

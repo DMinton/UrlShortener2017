@@ -25,7 +25,7 @@
         <div class="col-md-6 col-md-offset-3">
             <div class="form-group">
                 <div class="input-group">
-                    <input v-model="inputUrl" type="input" class="form-control" id="urladdress" placeholder="URL Address">
+                    <input v-on:keyup.enter="submitUrl" v-model="inputUrl" type="input" class="form-control" id="urladdress" placeholder="URL Address">
                     <span class="input-group-btn">
                         <button v-on:click="clearUrl" class="btn btn-default" type="button">Clear</button>
                     </span>

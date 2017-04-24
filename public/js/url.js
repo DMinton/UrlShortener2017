@@ -24,7 +24,13 @@ var vm = new Vue({
             vm = this;
             vm.errorMessage = ''
             Vue.nextTick(function () {
-                if (!vm.validateUrl(vm.inputUrl)) {
+                var url = vm.inputUrl;
+
+                if (!url.match(/^http([s]?):\/\/.*/)) {
+                    url = 'http://' + url;
+                }
+
+                if (!vm.validateUrl(url)) {
                     vm.errorMessage = "Please enter a valid URL.";
                     return false;
                 }
@@ -32,7 +38,7 @@ var vm = new Vue({
                 $.ajax({
                     type: "POST",
                     url: '/api/create',
-                    data: {url: vm.inputUrl},
+                    data: {url: url},
                     success: function(data) {
                         vm.displayUrl = document.location.href + data.url.shortenedUrl;
                         vm.fetchTopVisits();
@@ -61,8 +67,48 @@ var vm = new Vue({
             this.inputUrl = site.fullUrl;
             this.displayUrl = document.location.href + site.shortenedUrl;
         },
-        validateUrl: function(value) {
-            return /^(https?|ftp):\/\/(((([a-z]|\d|-|\.|_|~|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])|(%[\da-f]{2})|[!\$&'\(\)\*\+,;=]|:)*@)?(((\d|[1-9]\d|1\d\d|2[0-4]\d|25[0-5])\.(\d|[1-9]\d|1\d\d|2[0-4]\d|25[0-5])\.(\d|[1-9]\d|1\d\d|2[0-4]\d|25[0-5])\.(\d|[1-9]\d|1\d\d|2[0-4]\d|25[0-5]))|((([a-z]|\d|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])|(([a-z]|\d|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])([a-z]|\d|-|\.|_|~|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])*([a-z]|\d|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])))\.)+(([a-z]|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])|(([a-z]|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])([a-z]|\d|-|\.|_|~|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])*([a-z]|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])))\.?)(:\d*)?)(\/((([a-z]|\d|-|\.|_|~|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])|(%[\da-f]{2})|[!\$&'\(\)\*\+,;=]|:|@)+(\/(([a-z]|\d|-|\.|_|~|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])|(%[\da-f]{2})|[!\$&'\(\)\*\+,;=]|:|@)*)*)?)?(\?((([a-z]|\d|-|\.|_|~|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])|(%[\da-f]{2})|[!\$&'\(\)\*\+,;=]|:|@)|[\uE000-\uF8FF]|\/|\?)*)?(\#((([a-z]|\d|-|\.|_|~|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])|(%[\da-f]{2})|[!\$&'\(\)\*\+,;=]|:|@)|\/|\?)*)?$/i.test(value);
+        validateUrl: function(url) {
+            var rg_pctEncoded = "%[0-9a-fA-F]{2}";
+            var rg_protocol = "(http|https):\\/\\/";
+
+            var rg_userinfo = "([a-zA-Z0-9$\\-_.+!*'(),;:&=]|" + rg_pctEncoded + ")+" + "@";
+
+            var rg_decOctet = "(25[0-5]|2[0-4][0-9]|[0-1][0-9][0-9]|[1-9][0-9]|[0-9])"; // 0-255
+            var rg_ipv4address = "(" + rg_decOctet + "(\\." + rg_decOctet + "){3}" + ")";
+            var rg_hostname = "([a-zA-Z0-9\\-\\u00C0-\\u017F]+\\.)+([a-zA-Z]{2,})";
+            var rg_port = "[0-9]+";
+
+            var rg_hostport = "(" + rg_ipv4address + "|localhost|" + rg_hostname + ")(:" + rg_port + ")?";
+
+            // chars sets
+            // safe           = "$" | "-" | "_" | "." | "+"
+            // extra          = "!" | "*" | "'" | "(" | ")" | ","
+            // hsegment       = *[ alpha | digit | safe | extra | ";" | ":" | "@" | "&" | "=" | escape ]
+            var rg_pchar = "a-zA-Z0-9$\\-_.+!*'(),;:@&=";
+            var rg_segment = "([" + rg_pchar + "]|" + rg_pctEncoded + ")*";
+
+            var rg_path = rg_segment + "(\\/" + rg_segment + ")*";
+            var rg_query = "\\?" + "([" + rg_pchar + "/?]|" + rg_pctEncoded + ")*";
+            var rg_fragment = "\\#" + "([" + rg_pchar + "/?]|" + rg_pctEncoded + ")*";
+
+            var rgHttpUrl = new RegExp( 
+                "^"
+                + rg_protocol
+                + "(" + rg_userinfo + ")?"
+                + rg_hostport
+                + "(\\/"
+                + "(" + rg_path + ")?"
+                + "(" + rg_query + ")?"
+                + "(" + rg_fragment + ")?"
+                + ")?"
+                + "$"
+            );
+
+            if (rgHttpUrl.test(url)) {
+                return true;
+            } else {
+                return false;
+            }
         }
     }
 });
