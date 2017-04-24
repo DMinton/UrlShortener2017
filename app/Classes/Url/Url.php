@@ -46,8 +46,8 @@ class Url {
         ));
     }
 
-    public function getMostVisits() {
-        return $this->UrlModel->getMostVisits()->get();
+    public function getMostVisits($count) {
+        return $this->UrlModel->getMostVisits($count)->get()->all();
     }
 
     protected function createString($length = 5) {

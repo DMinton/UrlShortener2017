@@ -25,3 +25,14 @@
 .right15 { margin-right:15px; }
 .right17 { margin-right:17px; }
 .right30 { margin-right:30px; }
+
+.truncate {
+  max-width: 170px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.looksClickable {
+    cursor: pointer;
+}

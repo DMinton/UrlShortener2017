@@ -41,7 +41,7 @@ class UrlController extends Controller
 
     public function topVisits($number = 10) {
         // create the url and return it
-        $topVisits = $this->Url->getMostUsed($number);
+        $topVisits = $this->Url->getMostVisits($number);
 
         return response()->json(array('topVisits' => $topVisits));
     }

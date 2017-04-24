@@ -34,6 +34,7 @@ class Url extends Model
 
     public function scopegetMostVisits($query, $count) {
         return $query->orderBy('visits', 'DESC')
+            ->where('visits', '>', 0)
             ->limit($count);
     }
 
