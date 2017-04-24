@@ -1,7 +1,7 @@
 @extends('master')
 
 @section('content')
-    <div class="row">
+    <div class="row top7">
         <div class="col-md-4 col-md-offset-8">
             <table v-if="sites" class="table-condensed table-hover well" style="width: 350px;">
                 <tbody>
@@ -27,7 +27,7 @@
                 <div class="input-group">
                     <input v-model="inputUrl" type="input" class="form-control" id="urladdress" placeholder="URL Address">
                     <span class="input-group-btn">
-                        <button v-on:click="clearUrl" class="btn btn-info" type="button">Clear</button>
+                        <button v-on:click="clearUrl" class="btn btn-default" type="button">Clear</button>
                     </span>
                 </div>
             </div>

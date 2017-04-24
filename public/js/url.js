@@ -55,6 +55,7 @@ var vm = new Vue({
         clearUrl: function() {
             this.displayUrl = '';
             this.inputUrl = '';
+            this.errorMessage = '';
         },
         populateUrl: function(site) {
             this.inputUrl = site.fullUrl;
