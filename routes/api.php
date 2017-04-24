@@ -13,7 +13,7 @@ use Illuminate\Http\Request;
 |
 */
 
-Route::group(['namespace' => 'url'], function () {
+Route::group(['namespace' => 'Url'], function () {
 
     Route::post('/create', 'UrlController@create');
     Route::get('/topVisits/{number?}', 'UrlController@topVisits');
