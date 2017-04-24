@@ -11,7 +11,7 @@
 |
 */
 
-Route::group(['namespace' => 'url'], function () {
+Route::group(['namespace' => 'Url'], function () {
 
     Route::get('/', 'UrlController@index');
     Route::get('/{shortened}', 'UrlController@redirect');
