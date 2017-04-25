@@ -6,7 +6,7 @@ use App\Classes\Url\Model\Url as UrlModel;
 
 class Url {
     
-    CONST TIME_FORMAT = 'M j, Y H:i a';
+    CONST TIME_FORMAT = 'M j, Y H:i';
 
     public $id;
     public $shortenedUrl;
@@ -177,13 +177,13 @@ class Url {
     }
 
     public function setCreatedAt($created_at) {
-        $this->created_at = date(self::TIME_FORMAT, strtotime($created_at)) . ' UTC';
+        $this->created_at = date(self::TIME_FORMAT, strtotime($created_at));
 
         return $this;
     }
 
     public function setUpdatedAt($updated_at) {
-        $this->updated_at = date(self::TIME_FORMAT, strtotime($updated_at)) . ' UTC';
+        $this->updated_at = date(self::TIME_FORMAT, strtotime($updated_at));
 
         return $this;
     }
