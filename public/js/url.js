@@ -24,21 +24,15 @@ var vm = new Vue({
             vm = this;
             vm.errorMessage = ''
             Vue.nextTick(function () {
-                var url = vm.inputUrl;
 
-                if (!url.match(/^http([s]?):\/\/.*/)) {
-                    url = 'http://' + url;
-                }
-
-                if (!vm.validateUrl(url)) {
-                    vm.errorMessage = "Please enter a valid URL.";
-                    return false;
+                if (!vm.inputUrl.match(/^http([s]?):\/\/.*/)) {
+                    vm.inputUrl = 'http://' + vm.inputUrl;
                 }
 
                 $.ajax({
                     type: "POST",
                     url: '/api/create',
-                    data: {url: url},
+                    data: {url: vm.inputUrl},
                     success: function(data) {
                         vm.displayUrl = document.location.href + data.url.shortenedUrl;
                         vm.fetchTopVisits();

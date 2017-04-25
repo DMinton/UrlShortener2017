@@ -22,10 +22,14 @@ class UrlController extends Controller
         $urlObject = $this->Url->findShortenedUrl($shortened);
 
         if ($urlObject->isEmpty()) {
-            return redirect()->action('UrlController@index');
+            return redirect()->action('Url\UrlController@index');
         }
 
         $url = $urlObject->first();
+
+        if (!Url::isValidUrl($url->fullUrl)) {
+            return view('url/problem')->with(array('url' => $url));
+        }
 
         $url->addOneVisit();
 
