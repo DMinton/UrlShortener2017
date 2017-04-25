@@ -8,45 +8,44 @@ use Illuminate\Http\Request;
 
 class UrlController extends Controller
 {
-    private $Url;
-
-    public function __construct(Url $Url) {
-        $this->Url = $Url;
-    }
-
     public function index() {
         return view('url/url');
     }
 
     public function redirect($shortened) {
-        $urlObject = $this->Url->findShortenedUrl($shortened);
+        $url = Url::init()->setShortenedUrl($shortened);
 
-        if ($urlObject->isEmpty()) {
+        if (!$url->loadByShortenedUrl()) {
             return redirect()->action('Url\UrlController@index');
         }
 
-        $url = $urlObject->first();
-
-        if (!Url::isValidUrl($url->fullUrl)) {
+        if (!$url->isValidUrl()) {
             return view('url/problem')->with(array('url' => $url));
         }
 
         $url->addOneVisit();
 
-        return redirect($url->fullUrl);
+        return redirect($url->getFullUrl());
     }
 
     public function create(Request $request) {
-        // create the url and return it
-        $url = $this->Url->findOrCreateShortenedUrl($request->input('url'));
+        $url = Url::init()->setFullUrl($request->input('url'));
+        
+        if (!$url->loadByUrl()) {
+            $url->create();
+        }
 
         return response()->json(array('url' => $url));
     }
 
     public function topVisits($number = 10) {
-        // create the url and return it
-        $topVisits = $this->Url->getMostVisits($number);
+        $modelUrls = URL::getMostVisits($number);
 
+        $topVisits = array();
+        foreach ($modelUrls as $model) {
+            $topVisits[] = Url::init()->setFromModel($model);
+        }
+        
         return response()->json(array('topVisits' => $topVisits));
     }
 }

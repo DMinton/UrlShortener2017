@@ -9,49 +9,42 @@ class Url extends Model
 {
     protected $table = 'url';
 
-    private static $_instance = null;
-
-    public static function newUrl ()
+    public static function init ()
     {
-        if (self::$_instance === null) {
-            self::$_instance = new self;
-        }
-
-        return self::$_instance;
+        return new self;
     }
 
     public function scopefindShortenedUrl($query, $shortened) {
-        return $query->where('shortenedUrl', $shortened);
+        return $query->where('shortenedUrl', $shortened)->get();
     }
 
     public function scopefindUrlHash($query, $url) {
-        return $query->where('hashUrl', md5($url));
+        return $query->where('hashUrl', md5($url))->get();
     }
 
     public function scopefindUrl($query, $url) {
-        return $query->where('fullUrl', $url);
+        return $query->where('fullUrl', $url)->get();
     }
 
-    public function scopegetMostVisits($query, $count) {
-        return $query->orderBy('visits', 'DESC')
+    public static function getMostVisits($count) {
+        return self::orderBy('visits', 'DESC')
             ->where('visits', '>', 0)
-            ->limit($count);
+            ->limit($count)
+            ->get();
     }
 
-    public function addOneVisit() {
-        $this->visits++;
-        $this->save();
+    public function addOneVisit($id) {
+        self::where('id', $id)
+            ->increment('visits');
     }
 
     public function saveNewUrl(Array $urlData) {
-        $newUrl = self::newUrl();
-
-        $newUrl->shortenedUrl = $urlData['shortenedUrl'];
-        $newUrl->fullUrl = $urlData['fullUrl'];
-        $newUrl->hashUrl = md5($urlData['fullUrl']);
+        $this->shortenedUrl = $urlData['shortenedUrl'];
+        $this->fullUrl = $urlData['fullUrl'];
+        $this->hashUrl = md5($urlData['fullUrl']);
         
-        $newUrl->save();
+        $this->save();
 
-        return $newUrl;
+        return $this;
     }
 }
