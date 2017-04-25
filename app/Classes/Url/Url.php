@@ -6,48 +6,73 @@ use App\Classes\Url\Model\Url as UrlModel;
 
 class Url {
     
-    protected $UrlModel;
+    CONST TIME_FORMAT = 'M j, Y H:i a';
 
+    public $id;
+    public $shortenedUrl;
+    public $fullUrl;
+    public $hashUrl;
+    public $visits;
+    public $created_at;
+    public $updated_at;
 
-    public function __construct(UrlModel $UrlModel) {
-        $this->UrlModel = $UrlModel;
+    public static function init ()
+    {
+        return new self;
     }
 
-    public function findOrCreateShortenedUrl($url) {
-        $urlObject = $this->findUrl($url);
-
-        if ($urlObject->isNotEmpty()) {
-            return $urlObject->first();
+    public function loadByShortenedUrl() {
+        if (isset($this->shortenedUrl)) {
+            $urlObject = UrlModel::init()->findShortenedUrl($this->shortenedUrl);
+            if ($urlObject->isNotEmpty()) {
+                $this->setFromModel($urlObject->first());
+            }
         }
 
-        return $this->createShortenedUrl($url);;
+        return $this->exists();
     }
 
-    public function findShortenedUrl($shortened) {
-        return $this->UrlModel->findShortenedUrl($shortened)->get();
+    public function loadByUrl() {
+        if (isset($this->fullUrl)) {
+            $urlObject = UrlModel::init()->findUrlHash($this->fullUrl);
+            if ($urlObject->isNotEmpty()) {
+                $this->setFromModel($urlObject->first());
+            }
+        }
+
+        return $this->exists();
     }
 
-    public function findUrl($url) {
-        return $this->UrlModel->findUrlHash($url)->get();
-    }
+    public function create() {
+        if (!isset($this->id) && isset($this->fullUrl)) {
+            $urlObject = $this->createShortenedUrl($this->fullUrl);
+            $this->setFromModel($urlObject);
+        }
 
-    public function shortenedUrlExists($shortened) {
-        return $this->findShortenedUrl($shortened)->isNotEmpty();
+        return $this->exists();
     }
 
     public function createShortenedUrl($url) {
         do {
-            $shortenedUrl = $this->createString();
+            $shortenedUrl = self::createString();
         } while($this->shortenedUrlExists($shortenedUrl));
 
-        return $this->UrlModel->saveNewUrl(array(
+        return UrlModel::init()->saveNewUrl(array(
             'fullUrl' => $url,
             'shortenedUrl' => $shortenedUrl
         ));
     }
 
-    public static function isValidUrl($url) {
-        $ch = curl_init($url);
+    public function shortenedUrlExists($shortened) {
+        return UrlModel::init()->findShortenedUrl($shortened)->isNotEmpty();
+    }
+
+    public function addOneVisit() {
+        UrlModel::init()->addOneVisit($this->id);
+    }
+
+    public function isValidUrl() {
+        $ch = curl_init($this->fullUrl);
         curl_setopt($ch, CURLOPT_NOBODY, true);
         curl_setopt($ch, CURLOPT_FOLLOWLOCATION, true);
         curl_exec($ch);
@@ -57,11 +82,11 @@ class Url {
         return 200 == $retcode;
     }
 
-    public function getMostVisits($count) {
-        return $this->UrlModel->getMostVisits($count)->get()->all();
+    public static function getMostVisits($count) {
+        return UrlModel::getMostVisits($count)->all();
     }
 
-    protected function createString($length = 5) {
+    protected static function createString($length = 5) {
         $characters = '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ';
         $charactersLength = strlen($characters);
         $randomString = '';
@@ -69,5 +94,97 @@ class Url {
             $randomString .= $characters[mt_rand(0, $charactersLength - 1)];
         }
         return $randomString;
+    }
+
+    public function exists() {
+        return isset($this->id);
+    }
+
+    public function setFromModel(UrlModel $UrlModel) {
+        return $this->setId($UrlModel->id)
+            ->setShortenedUrl($UrlModel->shortenedUrl)
+            ->setFullUrl($UrlModel->fullUrl)
+            ->setHashUrl($UrlModel->hashUrl)
+            ->setVisits($UrlModel->visits)
+            ->setCreatedAt($UrlModel->created_at)
+            ->setUpdatedAt($UrlModel->updated_at);
+    }
+
+    /**
+     * GETTERS
+     */
+
+    public function getId() {
+        return $this->id;
+    }
+
+    public function getShortenedUrl() {
+        return $this->shortenedUrl;
+    }
+
+    public function getFullUrl() {
+        return $this->fullUrl;
+    }
+
+    public function getHashUrl() {
+        return $this->hashUrl;
+    }
+
+    public function getVisits() {
+        return $this->visits;
+    }
+
+    public function getCreatedAt() {
+        return $this->created_at;
+    }
+
+    public function getUpdatedAt() {
+        return $this->updated_at;
+    }
+
+    /**
+     * SETTERS
+     */ 
+
+    public function setId($id) {
+        $this->id = $id;
+
+        return $this;
+    }
+
+    public function setShortenedUrl($shortenedUrl) {
+        $this->shortenedUrl = $shortenedUrl;
+
+        return $this;
+    }
+
+    public function setFullUrl($fullUrl) {
+        $this->fullUrl = $fullUrl;
+
+        return $this;
+    }
+
+    public function setHashUrl($hashUrl) {
+        $this->hashUrl = $hashUrl;
+
+        return $this;
+    }
+
+    public function setVisits($visits) {
+        $this->visits = $visits;
+
+        return $this;
+    }
+
+    public function setCreatedAt($created_at) {
+        $this->created_at = date(self::TIME_FORMAT, strtotime($created_at)) . ' UTC';
+
+        return $this;
+    }
+
+    public function setUpdatedAt($updated_at) {
+        $this->updated_at = date(self::TIME_FORMAT, strtotime($updated_at)) . ' UTC';
+
+        return $this;
     }
 }
