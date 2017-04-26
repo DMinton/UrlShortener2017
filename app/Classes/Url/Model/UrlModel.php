@@ -5,7 +5,7 @@ namespace App\Classes\Url\Model;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Hash;
 
-class Url extends Model
+class UrlModel extends Model
 {
     protected $table = 'url';
 

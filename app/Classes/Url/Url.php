@@ -2,7 +2,7 @@
 
 namespace App\Classes\Url;
 
-use App\Classes\Url\Model\Url as UrlModel;
+use App\Classes\Url\Model\UrlModel as UrlModel;
 
 class Url {
     
