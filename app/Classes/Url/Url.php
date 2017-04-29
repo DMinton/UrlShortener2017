@@ -2,7 +2,9 @@
 
 namespace App\Classes\Url;
 
+use App\Classes\Url\Model\UrlModelFactory as UrlModelFactory;
 use App\Classes\Url\Model\UrlModel as UrlModel;
+use App;
 
 class Url {
     
@@ -16,14 +18,29 @@ class Url {
     public $created_at;
     public $updated_at;
 
+    private $urlModelFactory;
+
+    public function __construct(UrlModelFactory $UrlModelFactory) {
+        $this->urlModelFactory = $UrlModelFactory;
+    }
+
     public static function init ()
     {
-        return new self;
+        return App::make('App\Classes\Url\Url');
     }
 
+    /**
+     * Attempt to load by the shortened url
+     *
+     * @return Boolean
+     */
     public function loadByShortenedUrl() {
         if (isset($this->shortenedUrl)) {
-            $urlObject = UrlModel::init()->findShortenedUrl($this->shortenedUrl);
+            $urlObject = $this->urlModelFactory
+                ->newInstance()
+                ->findShortenedUrl($this->shortenedUrl);
+
+            // if we found the shortened url, set it
             if ($urlObject->isNotEmpty()) {
                 $this->setFromModel($urlObject->first());
             }
@@ -32,9 +49,18 @@ class Url {
         return $this->exists();
     }
 
+    /**
+     * Attempt to load by the full url
+     *
+     * @return Boolean
+     */
     public function loadByUrl() {
         if (isset($this->fullUrl)) {
-            $urlObject = UrlModel::init()->findUrlHash($this->fullUrl);
+            $urlObject = $this->urlModelFactory
+                ->newInstance()
+                ->findUrlHash($this->fullUrl);
+
+            // if we found the full url, set it
             if ($urlObject->isNotEmpty()) {
                 $this->setFromModel($urlObject->first());
             }
@@ -43,6 +69,11 @@ class Url {
         return $this->exists();
     }
 
+    /**
+     * Attempt to create the shortened url
+     *
+     * @return Boolean
+     */
     public function create() {
         if (!isset($this->id) && isset($this->fullUrl)) {
             $urlObject = $this->createShortenedUrl($this->fullUrl);
@@ -52,25 +83,56 @@ class Url {
         return $this->exists();
     }
 
+    /**
+     * Create shortened url and return the model
+     *
+     * @param String $url
+     * @return Model
+     */
     public function createShortenedUrl($url) {
+        // loop until we create a shortened url that does not already exist
         do {
             $shortenedUrl = self::createString();
         } while($this->shortenedUrlExists($shortenedUrl));
 
-        return UrlModel::init()->saveNewUrl(array(
-            'fullUrl' => $url,
-            'shortenedUrl' => $shortenedUrl
+        return $this->urlModelFactory
+            ->newInstance()
+            ->saveNewUrl(array(
+                'fullUrl' => $url,
+                'shortenedUrl' => $shortenedUrl
         ));
     }
 
+    /**
+     * Check if shortened url exists
+     *
+     * @param String $shortened
+     * @return Boolean
+     */
     public function shortenedUrlExists($shortened) {
-        return UrlModel::init()->findShortenedUrl($shortened)->isNotEmpty();
+        return $this->urlModelFactory
+            ->newInstance()
+            ->findShortenedUrl($shortened)
+            ->isNotEmpty();
     }
 
+    /**
+     * Add one visit to the url
+     *
+     * @return void
+     */
     public function addOneVisit() {
-        UrlModel::init()->addOneVisit($this->id);
+        $this->urlModelFactory
+            ->newInstance()
+            ->addOneVisit($this->id);
     }
 
+    /**
+     * Determine if the url seems to be valid. Only 
+     * checks if the site returns a 200 or not.
+     *
+     * @return boolean
+     */
     public function isValidUrl() {
         $ch = curl_init($this->fullUrl);
         curl_setopt($ch, CURLOPT_NOBODY, true);
@@ -82,10 +144,22 @@ class Url {
         return 200 == $retcode;
     }
 
+    /**
+     * Get a collection of th most visited sites
+     *
+     * @param Integer $count
+     * @return Collection
+     */
     public static function getMostVisits($count) {
-        return UrlModel::getMostVisits($count)->all();
+        return UrlModelFactory::newStaticInstance()::getMostVisits($count)->all();
     }
 
+    /**
+     * Randomly generates a shortened url
+     *
+     * @param int $length
+     * @return String
+     */
     protected static function createString($length = 5) {
         $characters = '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ';
         $charactersLength = strlen($characters);
@@ -96,10 +170,21 @@ class Url {
         return $randomString;
     }
 
+    /**
+     * Determines if the url exists by if the id is set or not
+     *
+     * @return Boolean
+     */
     public function exists() {
         return isset($this->id);
     }
 
+    /**
+     * Sets all of the class variables
+     *
+     * @param UrlModel $UrlModel
+     * @return this
+     */
     public function setFromModel(UrlModel $UrlModel) {
         return $this->setId($UrlModel->id)
             ->setShortenedUrl($UrlModel->shortenedUrl)
