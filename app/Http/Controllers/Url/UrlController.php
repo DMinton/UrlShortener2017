@@ -3,11 +3,14 @@
 namespace App\Http\Controllers\Url;
 
 use App\Http\Controllers\Controller;
-use App\Classes\Url\UrlFactory as UrlFactory;
+use App\Classes\Url\UrlFactory;
 use Illuminate\Http\Request;
 
 class UrlController extends Controller
 {
+    /**
+     * @var UrlFactory
+     */
     private $urlFactory;
 
     public function __construct(UrlFactory $UrlFactory) {
@@ -24,8 +27,8 @@ class UrlController extends Controller
     }
 
     /**
-     * Landing page for the shortened URL. Will either redirect 
-     * to the page if valid or propmpt the user if the page does 
+     * Landing page for the shortened URL. Will either redirect
+     * to the page if valid or propmpt the user if the page does
      * not seem valid.
      *
      * @param String $shortened
@@ -52,7 +55,7 @@ class UrlController extends Controller
     }
 
     /**
-     * Create a url that does not exist or 
+     * Create a url that does not exist or
      * return on that already does exist.
      *
      * @param Request $request
@@ -62,7 +65,7 @@ class UrlController extends Controller
         $url = $this->urlFactory
             ->newInstance()
             ->setFullUrl($request->input('url'));
-        
+
         // if not found, we need to create the url
         if (!$url->loadByUrl()) {
             $url->create();
@@ -72,7 +75,7 @@ class UrlController extends Controller
     }
 
     /**
-     * Returns a json of the most visited. Take an 
+     * Returns a json of the most visited. Take an
      * integer of the length of the requested list.
      *
      * @param int $number
@@ -90,7 +93,7 @@ class UrlController extends Controller
                 ->newInstance()
                 ->setFromModel($model);
         }
-        
+
         return response()->json(array('topVisits' => $topVisits));
     }
 }

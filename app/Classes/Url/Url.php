@@ -4,10 +4,11 @@ namespace App\Classes\Url;
 
 use App\Classes\Url\Model\UrlModelFactory as UrlModelFactory;
 use App\Classes\Url\Model\UrlModel as UrlModel;
+use App\Classes\Url\Url;
 use App;
 
 class Url {
-    
+
     CONST TIME_FORMAT = 'M j, Y H:i';
 
     public $id;
@@ -24,9 +25,12 @@ class Url {
         $this->urlModelFactory = $UrlModelFactory;
     }
 
+    /**
+     * @return Url
+     */
     public static function init ()
     {
-        return App::make('App\Classes\Url\Url');
+        return App::make(self::class);
     }
 
     /**
@@ -128,7 +132,7 @@ class Url {
     }
 
     /**
-     * Determine if the url seems to be valid. Only 
+     * Determine if the url seems to be valid. Only
      * checks if the site returns a 200 or not.
      *
      * @return boolean
@@ -229,7 +233,7 @@ class Url {
 
     /**
      * SETTERS
-     */ 
+     */
 
     public function setId($id) {
         $this->id = $id;
