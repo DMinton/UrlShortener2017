@@ -17,6 +17,9 @@ class Url {
     public $created_at;
     public $updated_at;
 
+    /**
+     * @var UrlModelFactory
+     */
     private $urlModelFactory;
 
     public function __construct(UrlModelFactory $UrlModelFactory) {
