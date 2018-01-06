@@ -1,9 +1,7 @@
-<?php
+<?php namespace App\Classes\Url;
 
-namespace App\Classes\Url;
-
-use App\Classes\Url\Model\UrlModelFactory as UrlModelFactory;
-use App\Classes\Url\Model\UrlModel as UrlModel;
+use App\Classes\Url\Model\UrlModelFactory;
+use App\Classes\Url\Model\UrlModel;
 use App\Classes\Url\Url;
 use App;
 
@@ -23,14 +21,6 @@ class Url {
 
     public function __construct(UrlModelFactory $UrlModelFactory) {
         $this->urlModelFactory = $UrlModelFactory;
-    }
-
-    /**
-     * @return Url
-     */
-    public static function init ()
-    {
-        return App::make(self::class);
     }
 
     /**
@@ -141,6 +131,7 @@ class Url {
         $ch = curl_init($this->fullUrl);
         curl_setopt($ch, CURLOPT_NOBODY, true);
         curl_setopt($ch, CURLOPT_FOLLOWLOCATION, true);
+        curl_setopt($ch, CURLOPT_TIMEOUT, 5);
         curl_exec($ch);
         $retcode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
         curl_close($ch);

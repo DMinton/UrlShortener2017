@@ -1,15 +1,21 @@
-<?php
+<?php namespace App\Classes\Url\Model;
 
-namespace App\Classes\Url\Model;
-
-use App\Classes\Url\Model\UrlModel as UrlModel;
+use App\Classes\Url\Model\UrlModel;
+use App;
 
 class UrlModelFactory {
+
+    /**
+     * @return UrlModel
+     */
     public function newInstance() {
-        return UrlModel::init();
+        return App::make(UrlModel::class);
     }
 
+    /**
+     * @return UrlModel
+     */
     public static function newStaticInstance() {
-        return UrlModel::init();
+        return App::make(UrlModel::class);
     }
 }

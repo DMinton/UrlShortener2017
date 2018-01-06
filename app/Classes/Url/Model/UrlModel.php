@@ -1,6 +1,4 @@
-<?php
-
-namespace App\Classes\Url\Model;
+<?php namespace App\Classes\Url\Model;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Hash;
@@ -8,11 +6,6 @@ use Illuminate\Support\Facades\Hash;
 class UrlModel extends Model
 {
     protected $table = 'url';
-
-    public static function init ()
-    {
-        return new self;
-    }
 
     /**
      * Locate the shortened url and return it

@@ -1,8 +1,7 @@
-<?php
+<?php namespace App\Classes\Url;
 
-namespace App\Classes\Url;
-
-use App\Classes\Url\Url as Url;
+use App\Classes\Url\Url;
+use App;
 
 class UrlFactory {
 

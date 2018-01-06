@@ -1,6 +1,4 @@
-<?php
-
-namespace App\Http\Controllers\Url;
+<?php namespace App\Http\Controllers\Url;
 
 use App\Http\Controllers\Controller;
 use App\Classes\Url\UrlFactory;
@@ -28,7 +26,7 @@ class UrlController extends Controller
 
     /**
      * Landing page for the shortened URL. Will either redirect
-     * to the page if valid or propmpt the user if the page does
+     * to the page if valid or prompt the user if the page does
      * not seem valid.
      *
      * @param String $shortened
