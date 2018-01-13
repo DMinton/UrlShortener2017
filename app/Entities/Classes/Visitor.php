@@ -107,7 +107,7 @@ class Visitor {
             }
         }
 
-        return "8.8.8.8";
+        return "";
     }
 
     /**
