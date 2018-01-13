@@ -11,6 +11,9 @@ class UrlController extends Controller
      */
     private $urlFactory;
 
+    /**
+     * @param UrlFactory $UrlFactory
+     */
     public function __construct(UrlFactory $UrlFactory) {
         $this->urlFactory = $UrlFactory;
     }
@@ -33,7 +36,7 @@ class UrlController extends Controller
      * @return view
      */
     public function redirect($shortened) {
-        $url = $this->urlFactory
+        $url = $this->getUrlFactory()
             ->newInstance()
             ->setShortenedUrl($shortened);
 
@@ -60,7 +63,7 @@ class UrlController extends Controller
      * @return json
      */
     public function create(Request $request) {
-        $url = $this->urlFactory
+        $url = $this->getUrlFactory()
             ->newInstance()
             ->setFullUrl($request->input('url'));
 
@@ -80,18 +83,26 @@ class UrlController extends Controller
      * @return json
      */
     public function topVisits($number = 10) {
-        $modelUrls = $this->urlFactory
+        $modelUrls = $this->getUrlFactory()
             ->newInstance()
             ->getMostVisits($number);
 
         // loop through and set each of the top visits as an object
         $topVisits = array();
         foreach ($modelUrls as $model) {
-            $topVisits[] = $this->urlFactory
+            $topVisits[] = $this->getUrlFactory()
                 ->newInstance()
                 ->setFromModel($model);
         }
 
         return response()->json(array('topVisits' => $topVisits));
+    }
+
+    /**
+     * @return UrlFactory
+     */
+    protected function getUrlFactory()
+    {
+        return $this->urlFactory;
     }
 }
