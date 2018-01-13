@@ -84,7 +84,7 @@ class Visitor {
      */
     public function setRequestInformation(Request $request)
     {
-        $this->setIp($request->ip())
+        $this->setIp($request->getClientIp())
             ->setPath($request->path())
             ->setRequest_payload(json_encode($request->input()));
 
