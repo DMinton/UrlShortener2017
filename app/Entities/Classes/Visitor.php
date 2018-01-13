@@ -116,7 +116,7 @@ class Visitor {
     public function load()
     {
         if ($this->exists()) {
-            $response = $this->getGuzzleClient()->request("GET", "http://ipinfo.io/{$this->getIp()}/json");
+            $response = $this->getGuzzleClient()->request("GET", "http://ipinfo.io/{$this->getIp()}/json", ['http_errors' => false]);
         
             if ($response->getStatusCode() == 200) {
                 $this->setFromJsonResponse(json_decode((string)$response->getBody()));
