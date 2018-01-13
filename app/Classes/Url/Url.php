@@ -2,19 +2,45 @@
 
 use App\Classes\Url\Model\UrlModelFactory;
 use App\Classes\Url\Model\UrlModel;
-use App\Classes\Url\Url;
 use App;
 
 class Url {
 
     CONST TIME_FORMAT = 'M j, Y H:i';
 
+    /**
+     * @var Integer
+     */
     public $id;
+
+    /**
+     * @var String
+     */
     public $shortenedUrl;
+
+    /**
+     * @var String
+     */
     public $fullUrl;
+
+    /**
+     * @var String
+     */
     public $hashUrl;
+
+    /**
+     * @var Integer
+     */
     public $visits;
+
+    /**
+     * @var String
+     */
     public $created_at;
+
+    /**
+     * @var String
+     */
     public $updated_at;
 
     /**
@@ -22,6 +48,9 @@ class Url {
      */
     private $urlModelFactory;
 
+    /**
+     * @param UrlModelFactory $UrlModelFactory
+     */
     public function __construct(UrlModelFactory $UrlModelFactory) {
         $this->urlModelFactory = $UrlModelFactory;
     }
@@ -32,10 +61,10 @@ class Url {
      * @return Boolean
      */
     public function loadByShortenedUrl() {
-        if (isset($this->shortenedUrl)) {
-            $urlObject = $this->urlModelFactory
+        if (!empty($this->getShortenedUrl())) {
+            $urlObject = $this->getUrlModelFactory()
                 ->newInstance()
-                ->findShortenedUrl($this->shortenedUrl);
+                ->findShortenedUrl($this->getShortenedUrl());
 
             // if we found the shortened url, set it
             if ($urlObject->isNotEmpty()) {
@@ -52,10 +81,10 @@ class Url {
      * @return Boolean
      */
     public function loadByUrl() {
-        if (isset($this->fullUrl)) {
-            $urlObject = $this->urlModelFactory
+        if (!empty($this->getFullUrl())) {
+            $urlObject = $this->getUrlModelFactory()
                 ->newInstance()
-                ->findUrlHash($this->fullUrl);
+                ->findUrlHash($this->getFullUrl());
 
             // if we found the full url, set it
             if ($urlObject->isNotEmpty()) {
@@ -72,8 +101,8 @@ class Url {
      * @return Boolean
      */
     public function create() {
-        if (!isset($this->id) && isset($this->fullUrl)) {
-            $urlObject = $this->createShortenedUrl($this->fullUrl);
+        if (empty($this->getId()) && !empty($this->getFullUrl())) {
+            $urlObject = $this->createShortenedUrl($this->getFullUrl());
             $this->setFromModel($urlObject);
         }
 
@@ -92,7 +121,7 @@ class Url {
             $shortenedUrl = self::createString();
         } while($this->shortenedUrlExists($shortenedUrl));
 
-        return $this->urlModelFactory
+        return $this->getUrlModelFactory()
             ->newInstance()
             ->saveNewUrl(array(
                 'fullUrl' => $url,
@@ -107,7 +136,7 @@ class Url {
      * @return Boolean
      */
     public function shortenedUrlExists($shortened) {
-        return $this->urlModelFactory
+        return $this->getUrlModelFactory()
             ->newInstance()
             ->findShortenedUrl($shortened)
             ->isNotEmpty();
@@ -119,9 +148,9 @@ class Url {
      * @return void
      */
     public function addOneVisit() {
-        $this->urlModelFactory
+        $this->getUrlModelFactory()
             ->newInstance()
-            ->addOneVisit($this->id);
+            ->addOneVisit($this->getId());
     }
 
     /**
@@ -131,7 +160,7 @@ class Url {
      * @return boolean
      */
     public function isValidUrl() {
-        $ch = curl_init($this->fullUrl);
+        $ch = curl_init($this->getFullUrl());
         curl_setopt($ch, CURLOPT_NOBODY, true);
         curl_setopt($ch, CURLOPT_FOLLOWLOCATION, true);
         curl_setopt($ch, CURLOPT_TIMEOUT, 5);
@@ -155,7 +184,7 @@ class Url {
     /**
      * Randomly generates a shortened url
      *
-     * @param int $length
+     * @param Integer $length
      * @return String
      */
     protected static function createString($length = 5) {
@@ -174,14 +203,14 @@ class Url {
      * @return Boolean
      */
     public function exists() {
-        return isset($this->id);
+        return !empty($this->getId());
     }
 
     /**
      * Sets all of the class variables
      *
      * @param UrlModel $UrlModel
-     * @return this
+     * @return Url
      */
     public function setFromModel(UrlModel $UrlModel) {
         return $this->setId($UrlModel->id)
@@ -194,77 +223,137 @@ class Url {
     }
 
     /**
-     * GETTERS
+     * @return UrlModelFactory
      */
+    public function getUrlModelFactory()
+    {
+        return $this->urlModelFactory;
+    }
 
+    /**
+    * @return Integer
+    */
     public function getId() {
         return $this->id;
     }
 
+    /**
+     * @return String
+     */
     public function getShortenedUrl() {
         return $this->shortenedUrl;
     }
 
+    /**
+     * @return String
+     */
     public function getFullUrl() {
         return $this->fullUrl;
     }
 
+    /**
+     * @return String
+     */
     public function getHashUrl() {
         return $this->hashUrl;
     }
 
+    /**
+     * @return Integer
+     */
     public function getVisits() {
         return $this->visits;
     }
 
+    /**
+     * @return String
+     */
     public function getCreatedAt() {
         return $this->created_at;
     }
 
+    /**
+     * @return String
+     */
     public function getUpdatedAt() {
         return $this->updated_at;
     }
 
     /**
-     * SETTERS
+     * @param UrlModelFactory $urlModelFactory
+     * @return this
      */
+    public function setUrlFactory(UrlModelFactory $urlModelFactory)
+    {
+        $this->urlModelFactory = $urlModelFactory;
 
+        return $this;
+    }
+
+     /**
+      * @param Integer $id
+      * @return this
+      */
     public function setId($id) {
         $this->id = $id;
 
         return $this;
     }
 
+    /**
+     * @param String $shortenedUrl
+     * @return this
+     */
     public function setShortenedUrl($shortenedUrl) {
         $this->shortenedUrl = $shortenedUrl;
 
         return $this;
     }
 
+    /**
+     * @param String $fullUrl
+     * @return this
+     */
     public function setFullUrl($fullUrl) {
         $this->fullUrl = $fullUrl;
 
         return $this;
     }
 
+    /**
+     * @param String $hashUrl
+     * @return this
+     */
     public function setHashUrl($hashUrl) {
         $this->hashUrl = $hashUrl;
 
         return $this;
     }
 
+    /**
+     * @param Integer $visits
+     * @return this
+     */
     public function setVisits($visits) {
         $this->visits = $visits;
 
         return $this;
     }
 
+    /**
+     * @param String $created_at
+     * @return this
+     */
     public function setCreatedAt($created_at) {
         $this->created_at = date(self::TIME_FORMAT, strtotime($created_at));
 
         return $this;
     }
 
+    /**
+     * @param String $updated_at
+     * @return this
+     */
     public function setUpdatedAt($updated_at) {
         $this->updated_at = date(self::TIME_FORMAT, strtotime($updated_at));
 
