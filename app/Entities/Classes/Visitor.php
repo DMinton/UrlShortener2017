@@ -84,8 +84,7 @@ class Visitor {
      */
     public function setRequestInformation(Request $request)
     {
-        $ips = array_reverse($request->getClientIps());
-        $this->setIp(array_pop($ips))
+        $this->setIp($this->findIp())
             ->setPath($request->path())
             ->setRequest_payload(json_encode($request->input()));
 
@@ -93,11 +92,30 @@ class Visitor {
     }
 
     /**
+     * @return String
+     */
+    private function findIp()
+    {
+        foreach (array('HTTP_CLIENT_IP', 'HTTP_X_FORWARDED_FOR', 'HTTP_X_FORWARDED', 'HTTP_X_CLUSTER_CLIENT_IP', 'HTTP_FORWARDED_FOR', 'HTTP_FORWARDED', 'REMOTE_ADDR') as $key){
+            if (array_key_exists($key, $_SERVER) === true){
+                foreach (explode(',', $_SERVER[$key]) as $ip){
+                    $ip = trim($ip); // just to be safe
+                    if (filter_var($ip, FILTER_VALIDATE_IP, FILTER_FLAG_NO_PRIV_RANGE | FILTER_FLAG_NO_RES_RANGE) !== false){
+                        return $ip;
+                    }
+                }
+            }
+        }
+
+        return "8.8.8.8";
+    }
+
+    /**
      * @return this
      */
     public function load()
     {
-        if (!empty($this->getIp())) {
+        if ($this->exists()) {
             $response = $this->getGuzzleClient()->request("GET", "http://ipinfo.io/{$this->getIp()}/json");
         
             if ($response->getStatusCode() == 200) {
@@ -113,11 +131,21 @@ class Visitor {
      */
     public function save()
     {
-        $this->getModelFactory()
-            ->newVisitorModel()
-            ->saveNewVisitor($this);
+        if ($this->exists()) {
+            $this->getModelFactory()
+                ->newVisitorModel()
+                ->saveNewVisitor($this);
+        }
 
         return $this;
+    }
+
+    /**
+     * @return Boolean
+     */
+    public function exists()
+    {
+        return !empty($this->getIp());
     }
 
     /**
