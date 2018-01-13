@@ -1,21 +1,33 @@
 <?php namespace App\Http\Controllers\Url;
 
 use App\Http\Controllers\Controller;
-use App\Classes\Url\UrlFactory;
+use App\Entities\Classes\ClassFactory;
+use App\Entities\Models\ModelFactory;
 use Illuminate\Http\Request;
 
 class UrlController extends Controller
 {
     /**
-     * @var UrlFactory
+     * @var ClassFactory
      */
-    private $urlFactory;
+    private $classFactory;
 
     /**
-     * @param UrlFactory $UrlFactory
+     * @param ClassFactory $ClassFactory
      */
-    public function __construct(UrlFactory $UrlFactory) {
-        $this->urlFactory = $UrlFactory;
+    public function __construct(ClassFactory $ClassFactory) {
+        $this->middleware(function ($request, $next) use ($ClassFactory) {
+            if (strpos($request->path(), "api/topVisits/") === false) {
+                $ClassFactory->newVisitorInstance()
+                    ->setRequestInformation($request)
+                    ->load()
+                    ->save();
+            }
+        
+            return $next($request);
+        });
+        
+        $this->classFactory = $ClassFactory;
     }
 
     /**
@@ -36,8 +48,8 @@ class UrlController extends Controller
      * @return view
      */
     public function redirect($shortened) {
-        $url = $this->getUrlFactory()
-            ->newInstance()
+        $url = $this->getClassFactory()
+            ->newUrlInstance()
             ->setShortenedUrl($shortened);
 
         // If the url was not found, redirect to main landing page
@@ -63,8 +75,8 @@ class UrlController extends Controller
      * @return json
      */
     public function create(Request $request) {
-        $url = $this->getUrlFactory()
-            ->newInstance()
+        $url = $this->getClassFactory()
+            ->newUrlInstance()
             ->setFullUrl($request->input('url'));
 
         // if not found, we need to create the url
@@ -83,15 +95,15 @@ class UrlController extends Controller
      * @return json
      */
     public function topVisits($number = 10) {
-        $modelUrls = $this->getUrlFactory()
-            ->newInstance()
+        $modelUrls = $this->getClassFactory()
+            ->newUrlInstance()
             ->getMostVisits($number);
 
         // loop through and set each of the top visits as an object
         $topVisits = array();
         foreach ($modelUrls as $model) {
-            $topVisits[] = $this->getUrlFactory()
-                ->newInstance()
+            $topVisits[] = $this->getClassFactory()
+                ->newUrlInstance()
                 ->setFromModel($model);
         }
 
@@ -99,10 +111,10 @@ class UrlController extends Controller
     }
 
     /**
-     * @return UrlFactory
+     * @return ClassFactory
      */
-    protected function getUrlFactory()
+    protected function getClassFactory()
     {
-        return $this->urlFactory;
+        return $this->classFactory;
     }
 }

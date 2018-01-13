@@ -1,4 +1,4 @@
-<?php namespace App\Classes\Url\Model;
+<?php namespace App\Entities\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Hash;

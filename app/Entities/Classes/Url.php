@@ -1,7 +1,7 @@
-<?php namespace App\Classes\Url;
+<?php namespace App\Entities\Classes;
 
-use App\Classes\Url\Model\UrlModelFactory;
-use App\Classes\Url\Model\UrlModel;
+use App\Entities\Models\ModelFactory;
+use App\Entities\Models\UrlModel;
 use App;
 
 class Url {
@@ -44,15 +44,15 @@ class Url {
     public $updated_at;
 
     /**
-     * @var UrlModelFactory
+     * @var ModelFactory
      */
-    private $urlModelFactory;
+    private $modelFactory;
 
     /**
-     * @param UrlModelFactory $UrlModelFactory
+     * @param ModelFactory $ModelFactory
      */
-    public function __construct(UrlModelFactory $UrlModelFactory) {
-        $this->urlModelFactory = $UrlModelFactory;
+    public function __construct(ModelFactory $ModelFactory) {
+        $this->modelFactory = $ModelFactory;
     }
 
     /**
@@ -62,8 +62,7 @@ class Url {
      */
     public function loadByShortenedUrl() {
         if (!empty($this->getShortenedUrl())) {
-            $urlObject = $this->getUrlModelFactory()
-                ->newInstance()
+            $urlObject = $this->getUrlModel()
                 ->findShortenedUrl($this->getShortenedUrl());
 
             // if we found the shortened url, set it
@@ -82,8 +81,7 @@ class Url {
      */
     public function loadByUrl() {
         if (!empty($this->getFullUrl())) {
-            $urlObject = $this->getUrlModelFactory()
-                ->newInstance()
+            $urlObject = $this->getUrlModel()
                 ->findUrlHash($this->getFullUrl());
 
             // if we found the full url, set it
@@ -121,8 +119,7 @@ class Url {
             $shortenedUrl = self::createString();
         } while($this->shortenedUrlExists($shortenedUrl));
 
-        return $this->getUrlModelFactory()
-            ->newInstance()
+        return $this->getUrlModel()
             ->saveNewUrl(array(
                 'fullUrl' => $url,
                 'shortenedUrl' => $shortenedUrl
@@ -136,8 +133,7 @@ class Url {
      * @return Boolean
      */
     public function shortenedUrlExists($shortened) {
-        return $this->getUrlModelFactory()
-            ->newInstance()
+        return $this->getUrlModel()
             ->findShortenedUrl($shortened)
             ->isNotEmpty();
     }
@@ -148,8 +144,7 @@ class Url {
      * @return void
      */
     public function addOneVisit() {
-        $this->getUrlModelFactory()
-            ->newInstance()
+        $this->getUrlModel()
             ->addOneVisit($this->getId());
     }
 
@@ -178,7 +173,7 @@ class Url {
      * @return Collection
      */
     public static function getMostVisits($count) {
-        return UrlModelFactory::newStaticInstance()::getMostVisits($count)->all();
+        return ModelFactory::newUrlStaticInstance()::getMostVisits($count)->all();
     }
 
     /**
@@ -223,11 +218,11 @@ class Url {
     }
 
     /**
-     * @return UrlModelFactory
+     * @return UrlModel
      */
-    public function getUrlModelFactory()
+    public function getUrlModel()
     {
-        return $this->urlModelFactory;
+        return $this->modelFactory->newUrlInstance();
     }
 
     /**
@@ -280,12 +275,12 @@ class Url {
     }
 
     /**
-     * @param UrlModelFactory $urlModelFactory
+     * @param ModelFactory $modelFactory
      * @return this
      */
-    public function setUrlFactory(UrlModelFactory $urlModelFactory)
+    public function setUrlFactory(ModelFactory $ModelFactory)
     {
-        $this->urlModelFactory = $urlModelFactory;
+        $this->modelFactory = $ModelFactory;
 
         return $this;
     }
