@@ -2,6 +2,7 @@
 
 use App\Entities\Models\ModelFactory;
 use App\Entities\Models\UrlModel;
+use GuzzleHttp\Client;
 use App;
 
 class Url {
@@ -49,10 +50,16 @@ class Url {
     private $modelFactory;
 
     /**
+     * @var Guzzle
+     */
+    private $guzzleClient;
+
+    /**
      * @param ModelFactory $ModelFactory
      */
-    public function __construct(ModelFactory $ModelFactory) {
+    public function __construct(ModelFactory $ModelFactory, Client $client) {
         $this->modelFactory = $ModelFactory;
+        $this->guzzleClient = $client;
     }
 
     /**
@@ -155,15 +162,17 @@ class Url {
      * @return boolean
      */
     public function isValidUrl() {
-        $ch = curl_init($this->getFullUrl());
-        curl_setopt($ch, CURLOPT_NOBODY, true);
-        curl_setopt($ch, CURLOPT_FOLLOWLOCATION, true);
-        curl_setopt($ch, CURLOPT_TIMEOUT, 5);
-        curl_exec($ch);
-        $retcode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
-        curl_close($ch);
+        return $this->getGuzzleClient()->request("GET", $this->getFullUrl(), ['http_errors' => false])->getStatusCode() == 200;
+    }
 
-        return 200 == $retcode;
+    /**
+     * Getter for Guzzle
+     *
+     * @return Guzzle
+     */
+    public function getGuzzleClient()
+    {
+        return $this->guzzleClient;
     }
 
     /**
