@@ -13,7 +13,7 @@
                         </tr>
                     </thead>
                     <tr v-on:click="populateUrl(site)" v-for="site in sites" class="info looksClickable">
-                        <td class="truncate" v-text="site.fullUrl">This is a long amount of text I am wanting to test</td>
+                        <td class="truncate" v-text="site.fullUrl"></td>
                         <td v-text="site.visits"></td>
                         <td v-text="site.updated_at"></td>
                     </tr>

@@ -4,6 +4,8 @@
         <meta charset="utf-8">
         <meta http-equiv="X-UA-Compatible" content="IE=edge">
         <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="description" content="Make a long URL short">
+        <meta name="keywords" content="URL,Shortener">
 
         <title>URL Shortener</title>
 
