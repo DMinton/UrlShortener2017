@@ -76,7 +76,7 @@ class Url
      */
     public static function getMostVisits($count)
     {
-        $cacheKey = self::CACHE_KEY . ":mostVisited:";
+        $cacheKey = self::CACHE_KEY . ":mostVisited";
         $mostVisitedSites = Cache::get($cacheKey);
         if (!is_null($mostVisitedSites)) {
             $mostVisitedSites = collect($mostVisitedSites);
@@ -313,6 +313,8 @@ class Url
     {
         $this->getUrlModel()
             ->addOneVisit($this->getId());
+
+        Cache::set(self::CACHE_KEY . ":mostVisited", null);
     }
 
     /**

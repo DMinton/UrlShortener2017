@@ -7,6 +7,8 @@ use Illuminate\Support\Facades\Redis;
 
 class RedisCache implements CacheInterface
 {
+    CONST CACHE_TTL = 5 * 60;
+
     /**
      * @var Redis
      */
@@ -40,6 +42,6 @@ class RedisCache implements CacheInterface
      */
     public function set($key, $value)
     {
-        return $this->getCache()->set($key, $value);
+        return $this->getCache()->set($key, $value, "EX", self::CACHE_TTL);
     }
 }
