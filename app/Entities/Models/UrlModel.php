@@ -1,52 +1,24 @@
 <?php namespace App\Entities\Models;
 
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Collection;
 
+/**
+ * Class UrlModel
+ * @package App\Entities\Models
+ */
 class UrlModel extends Model
 {
     protected $table = 'url';
 
     /**
-     * Locate the shortened url and return it
-     *
-     * @param Query $query
-     * @param String $shortened
-     * @return Collection
-     */
-    public function scopeFindShortenedUrl($query, $shortened) {
-        return $query->where('shortenedUrl', $shortened)->get();
-    }
-
-    /**
-     * This will locate a url by the hash.
-     *
-     * @param Query $query
-     * @param String $url
-     * @return Collection
-     */
-    public function scopeFindUrlHash($query, $url) {
-        return $query->where('hashUrl', md5($url))->get();
-    }
-
-    /**
-     * This will locate a url by the url.
-     *
-     * @param Query $query
-     * @param String $url
-     * @return Collection
-     */
-    public function scopeFindUrl($query, $url) {
-        return $query->where('fullUrl', $url)->get();
-    }
-
-    /**
      * Return a collection of the most visited url.
      *
-     * @param Integer $count
+     * @param int $count
      * @return Collection
      */
-    public static function getMostVisits($count) {
+    public static function getMostVisits($count)
+    {
         return self::orderBy('visits', 'DESC')
             ->where('visits', '>', 0)
             ->limit($count)
@@ -54,12 +26,49 @@ class UrlModel extends Model
     }
 
     /**
+     * Locate the shortened url and return it
+     *
+     * @param Query $query
+     * @param string $shortened
+     * @return Collection
+     */
+    public function scopeFindShortenedUrl($query, $shortened)
+    {
+        return $query->where('shortenedUrl', $shortened)->get();
+    }
+
+    /**
+     * This will locate a url by the hash.
+     *
+     * @param Query $query
+     * @param string $url
+     * @return Collection
+     */
+    public function scopeFindUrlHash($query, $url)
+    {
+        return $query->where('hashUrl', md5($url))->get();
+    }
+
+    /**
+     * This will locate a url by the url.
+     *
+     * @param Query $query
+     * @param string $url
+     * @return Collection
+     */
+    public function scopeFindUrl($query, $url)
+    {
+        return $query->where('fullUrl', $url)->get();
+    }
+
+    /**
      * Add one visit to the rul id passed in.
      *
-     * @param Integer $id
+     * @param int $id
      * @return void
      */
-    public function addOneVisit($id) {
+    public function addOneVisit($id)
+    {
         self::where('id', $id)
             ->increment('visits');
     }
@@ -67,14 +76,15 @@ class UrlModel extends Model
     /**
      * Will create a new url from the array passed in.
      *
-     * @param Array $urlData
-     * @return Model
+     * @param array $urlData
+     * @return UrlModel
      */
-    public function saveNewUrl(Array $urlData) {
+    public function saveNewUrl(array $urlData)
+    {
         $this->shortenedUrl = $urlData['shortenedUrl'];
         $this->fullUrl = $urlData['fullUrl'];
         $this->hashUrl = md5($urlData['fullUrl']);
-        
+
         $this->save();
 
         return $this;

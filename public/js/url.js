@@ -10,11 +10,11 @@ var vm = new Vue({
     computed: {
         urlIsEmptyAndNotValid: function(event) {
             if (this.inputUrl.length === 0 && !this.validateUrl(this.inputUrl)) {
-                this.displayUrl = ''
+                this.displayUrl = '';
                 return true;
             }
 
-            this.errorMessage = ''
+            this.errorMessage = '';
 
             return false;
         }
@@ -22,7 +22,7 @@ var vm = new Vue({
     methods: {
         submitUrl: function (event) {
             vm = this;
-            vm.errorMessage = ''
+            vm.errorMessage = '';
             Vue.nextTick(function () {
 
                 if (!vm.inputUrl.match(/^http([s]?):\/\/.*/)) {
@@ -36,6 +36,9 @@ var vm = new Vue({
                     success: function(data) {
                         vm.displayUrl = document.location.href + data.url.shortenedUrl;
                         vm.fetchTopVisits();
+                    },
+                    error: function() {
+                        vm.errorMessage = "Failed to create shortened url. Please try again.";
                     }
                 });
             });

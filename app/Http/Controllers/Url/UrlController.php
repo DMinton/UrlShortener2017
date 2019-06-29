@@ -1,8 +1,9 @@
 <?php namespace App\Http\Controllers\Url;
 
-use App\Http\Controllers\Controller;
 use App\Entities\Classes\ClassFactory;
-use App\Entities\Models\ModelFactory;
+use App\Entities\Models\UrlModel;
+use App\Http\Controllers\Controller;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
 class UrlController extends Controller
@@ -15,7 +16,8 @@ class UrlController extends Controller
     /**
      * @param ClassFactory $ClassFactory
      */
-    public function __construct(ClassFactory $ClassFactory) {
+    public function __construct(ClassFactory $ClassFactory)
+    {
         $this->middleware(function ($request, $next) use ($ClassFactory) {
             if (strpos($request->path(), "api/topVisits/") === false) {
                 $ClassFactory->newVisitorInstance()
@@ -23,19 +25,20 @@ class UrlController extends Controller
                     ->load()
                     ->save();
             }
-        
+
             return $next($request);
         });
-        
+
         $this->classFactory = $ClassFactory;
     }
 
     /**
      * Landing page
      *
-     * @return view
+     * @return \Illuminate\Contracts\View\Factory|\Illuminate\View\View
      */
-    public function index() {
+    public function index()
+    {
         return view('url/url');
     }
 
@@ -44,13 +47,19 @@ class UrlController extends Controller
      * to the page if valid or prompt the user if the page does
      * not seem valid.
      *
-     * @param String $shortened
-     * @return view
+     * @param string $shortened
+     * @return \Illuminate\Contracts\View\Factory|\Illuminate\Http\RedirectResponse|\Illuminate\Routing\Redirector|\Illuminate\View\View
      */
-    public function redirect($shortened) {
+    public function redirect($shortened)
+    {
         $url = $this->getClassFactory()
             ->newUrlInstance()
             ->setShortenedUrl($shortened);
+
+        // site is blocked, do not redirect
+        if ($this->getClassFactory()->newBlockedSite()->isBlockedSite($url)) {
+            return redirect()->action('Url\UrlController@index');
+        }
 
         // If the url was not found, redirect to main landing page
         if (!$url->loadByShortenedUrl()) {
@@ -68,13 +77,27 @@ class UrlController extends Controller
     }
 
     /**
+     * @return ClassFactory
+     */
+    protected function getClassFactory()
+    {
+        return $this->classFactory;
+    }
+
+    /**
      * Create a url that does not exist or
      * return on that already does exist.
      *
      * @param Request $request
-     * @return json
+     * @return JsonResponse
      */
-    public function create(Request $request) {
+    public function create(Request $request)
+    {
+        // site is blocked, do not redirect
+        if ($this->getClassFactory()->newBlockedSite()->isBlockedSite($request->input('url'))) {
+            return response()->json(array('errorMessage' => "failed to create short url. Try again later"), 400);
+        }
+
         $url = $this->getClassFactory()
             ->newUrlInstance()
             ->setFullUrl($request->input('url'));
@@ -92,29 +115,31 @@ class UrlController extends Controller
      * integer of the length of the requested list.
      *
      * @param int $number
-     * @return json
+     * @return JsonResponse
      */
-    public function topVisits($number = 10) {
+    public function topVisits($number = 10)
+    {
         $modelUrls = $this->getClassFactory()
             ->newUrlInstance()
-            ->getMostVisits($number);
+            ->getMostVisits(100);
 
         // loop through and set each of the top visits as an object
         $topVisits = array();
+        /** @var UrlModel $model */
         foreach ($modelUrls as $model) {
+            if ($this->getClassFactory()->newBlockedSite()->isBlockedSite($model->fullUrl)) {
+                continue;
+            }
+
             $topVisits[] = $this->getClassFactory()
                 ->newUrlInstance()
                 ->setFromModel($model);
+
+            if (count($topVisits) >= $number) {
+                break;
+            }
         }
 
         return response()->json(array('topVisits' => $topVisits));
-    }
-
-    /**
-     * @return ClassFactory
-     */
-    protected function getClassFactory()
-    {
-        return $this->classFactory;
     }
 }

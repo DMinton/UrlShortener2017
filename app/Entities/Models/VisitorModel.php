@@ -1,18 +1,18 @@
 <?php namespace App\Entities\Models;
 
-use Illuminate\Database\Eloquent\Model;
 use App\Entities\Classes\Visitor;
+use Illuminate\Database\Eloquent\Model;
 
 class VisitorModel extends Model
 {
     protected $table = 'visitor';
 
     /**
-     * @param $request
-     * @param $ipInformation
-     * @return this
+     * @param Visitor $visitor
+     * @return $this
      */
-    public function saveNewVisitor(Visitor $visitor) {
+    public function saveNewVisitor(Visitor $visitor)
+    {
         $this->ip = $visitor->getIp();
         $this->country = $visitor->getCountry();
         $this->region = $visitor->getRegion();
@@ -20,7 +20,7 @@ class VisitorModel extends Model
         $this->path = $visitor->getPath();
         $this->ip_payload = $visitor->getIp_payload();
         $this->request_payload = $visitor->getRequest_payload();
-        
+
         $this->save();
 
         return $this;

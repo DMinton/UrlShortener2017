@@ -2,19 +2,30 @@
 
 use App;
 
-class ClassFactory {
+class ClassFactory
+{
 
     /**
      * @return Url
      */
-    public function newUrlInstance() {
+    public function newUrlInstance()
+    {
         return App::make(Url::class);
     }
 
     /**
      * @return Visitor
      */
-    public function newVisitorInstance() {
+    public function newVisitorInstance()
+    {
         return App::make(Visitor::class);
+    }
+
+    /**
+     * @return BlockedSite
+     */
+    public function newBlockedSite()
+    {
+        return App::make(BlockedSite::class);
     }
 }
