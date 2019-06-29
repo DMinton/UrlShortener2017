@@ -61,7 +61,7 @@ class UrlController extends Controller
             ->setShortenedUrl($shortened);
 
         // site is blocked, do not redirect
-        if ($this->getClassFactory()->newBlockedSite()->isBlockedSite($url->getFullUrl())) {
+        if ($this->getClassFactory()->newBlockedSiteInstance()->isBlockedSite($url->getFullUrl())) {
             return redirect()->action('Url\UrlController@index');
         }
 
@@ -98,7 +98,7 @@ class UrlController extends Controller
     public function create(Request $request)
     {
         // site is blocked, do not redirect
-        if ($this->getClassFactory()->newBlockedSite()->isBlockedSite($request->input('url'))) {
+        if ($this->getClassFactory()->newBlockedSiteInstance()->isBlockedSite($request->input('url'))) {
             return response()->json(array('errorMessage' => "failed to create short url. Try again later"), 400);
         }
 
@@ -127,7 +127,7 @@ class UrlController extends Controller
             ->newUrlInstance()
             ->getMostVisits(100);
 
-        $blockedSites = $this->getClassFactory()->newBlockedSite();
+        $blockedSites = $this->getClassFactory()->newBlockedSiteInstance();
 
         // loop through and set each of the top visits as an object
         $topVisits = array();

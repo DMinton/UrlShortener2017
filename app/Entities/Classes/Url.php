@@ -1,7 +1,8 @@
 <?php namespace App\Entities\Classes;
 
 use App;
-use App\Entities\Cache\Cache;
+use App\Entities\Cache\Classes\CacheFactory;
+use App\Entities\Cache\Classes\UrlCache;
 use App\Entities\Models\ModelFactory;
 use App\Entities\Models\UrlModel;
 use GuzzleHttp\Client;
@@ -51,20 +52,27 @@ class Url
     /**
      * @var ModelFactory
      */
-    private $modelFactory;
+    protected $modelFactory;
 
     /**
      * @var Client
      */
-    private $guzzleClient;
+    protected $guzzleClient;
+
+    /**
+     * @var CacheFactory
+     */
+    protected $cacheFactory;
 
     /**
      * @param ModelFactory $ModelFactory
+     * @param CacheFactory $cacheFactory
      * @param Client $client
      */
-    public function __construct(ModelFactory $ModelFactory, Client $client)
+    public function __construct(ModelFactory $ModelFactory, CacheFactory $cacheFactory, Client $client)
     {
         $this->modelFactory = $ModelFactory;
+        $this->cacheFactory = $cacheFactory;
         $this->guzzleClient = $client;
     }
 
@@ -76,15 +84,15 @@ class Url
      */
     public static function getMostVisits($count)
     {
-        $cacheKey = self::CACHE_KEY . ":mostVisited";
-        $mostVisitedSites = Cache::get($cacheKey);
+        $urlCache = UrlCache::getInstance();
+        $mostVisitedSites = $urlCache->getMostVisited();
         if (!is_null($mostVisitedSites)) {
             $mostVisitedSites = collect($mostVisitedSites);
         } else {
-            $urlModelInstance = ModelFactory::newUrlStaticInstance();
+            $urlModelInstance = ModelFactory::newUrlStaticModel();
             $mostVisitedSites = $urlModelInstance::getMostVisits($count)->all();
 
-            Cache::set($cacheKey, $mostVisitedSites);
+            $urlCache->setMostVisited($mostVisitedSites);
         }
 
         return $mostVisitedSites;
@@ -98,9 +106,8 @@ class Url
     public function loadByShortenedUrl()
     {
         if (!empty($this->getShortenedUrl())) {
-            $cacheKey = self::CACHE_KEY . ":ShortenedUrl:" . $this->getShortenedUrl();
-            $cachedUrl = Cache::get($cacheKey);
-
+            $urlCache = $this->cacheFactory->newUrlCache();
+            $cachedUrl = $urlCache->getShortenedUrl($this->getShortenedUrl());
             if (!isset($cachedUrl)) {
                 $urlObject = $this->getUrlModel()
                     ->findShortenedUrl($this->getShortenedUrl());
@@ -108,7 +115,7 @@ class Url
                 // if we found the shortened url, set it
                 if ($urlObject->isNotEmpty()) {
                     $this->setFromObject($urlObject->first());
-                    Cache::set($cacheKey, $urlObject->first());
+                    $urlCache->setShortenedUrl($this->getShortenedUrl(), $urlObject->first());
                 }
             } else {
                 $this->setFromObject($cachedUrl);
@@ -142,7 +149,7 @@ class Url
      */
     public function getUrlModel()
     {
-        return $this->modelFactory->newUrlInstance();
+        return $this->modelFactory->newUrlModel();
     }
 
     /**
@@ -198,17 +205,17 @@ class Url
      */
     public function loadByUrl()
     {
-        $cacheKey = self::CACHE_KEY . ":UrlHash:" . $this->getFullUrl();
-        $cachedUrl = Cache::get($cacheKey);
-
+        $urlCache = $this->cacheFactory->newUrlCache();
+        $hashedUrl = md5($this->getFullUrl());
+        $cachedUrl = $urlCache->getUrlHash($hashedUrl);
         if (!isset($cachedUrl)) {
             $urlObject = $this->getUrlModel()
-                ->findUrl($this->getFullUrl());
+                ->findUrlHash($hashedUrl);
 
             // if we found the shortened url, set it
             if ($urlObject->isNotEmpty()) {
                 $this->setFromObject($urlObject->first());
-                Cache::set($cacheKey, $urlObject->first());
+                $urlCache->setUrlHash($hashedUrl, $urlObject->first());
             }
         } else {
             $this->setFromObject($cachedUrl);
@@ -247,8 +254,9 @@ class Url
             $urlObject = $this->createShortenedUrl($this->getFullUrl());
             $this->setFromObject($urlObject);
 
-            Cache::set(self::CACHE_KEY . ":UrlHash:" . $this->getFullUrl(), $urlObject);
-            Cache::set(self::CACHE_KEY . ":ShortenedUrl:" . $this->getShortenedUrl(), $urlObject);
+            $urlCache = $this->cacheFactory->newUrlCache();
+            $urlCache->setUrlHash($this->getHashUrl(), $urlObject);
+            $urlCache->setShortenedUrl($this->getShortenedUrl(), $urlObject);
         }
 
         return $this->exists();
@@ -305,47 +313,6 @@ class Url
     }
 
     /**
-     * Add one visit to the url
-     *
-     * @return void
-     */
-    public function addOneVisit()
-    {
-        $this->getUrlModel()
-            ->addOneVisit($this->getId());
-
-        Cache::set(self::CACHE_KEY . ":mostVisited", null);
-    }
-
-    /**
-     * Determine if the url seems to be valid. Only
-     * checks if the site returns a 200 or not.
-     *
-     * @return bool
-     */
-    public function isValidUrl()
-    {
-        $cacheKey = self::CACHE_KEY . ":status:" . $this->getShortenedUrl();
-        $status = Cache::get($cacheKey);
-        if (is_null($status)) {
-            $status = $this->getGuzzleClient()->request("GET", $this->getFullUrl(), ['http_errors' => false])->getStatusCode();
-            Cache::set($cacheKey, $status);
-        }
-
-        return $status == 200;
-    }
-
-    /**
-     * Getter for Guzzle
-     *
-     * @return Client
-     */
-    public function getGuzzleClient()
-    {
-        return $this->guzzleClient;
-    }
-
-    /**
      * @return string
      */
     public function getHashUrl()
@@ -362,6 +329,47 @@ class Url
         $this->hashUrl = $hashUrl;
 
         return $this;
+    }
+
+    /**
+     * Add one visit to the url
+     *
+     * @return void
+     */
+    public function addOneVisit()
+    {
+        $this->getUrlModel()
+            ->addOneVisit($this->getId());
+
+        $this->cacheFactory->newUrlCache()->resetMostVisited();
+    }
+
+    /**
+     * Determine if the url seems to be valid. Only
+     * checks if the site returns a 200 or not.
+     *
+     * @return bool
+     */
+    public function isValidUrl()
+    {
+        $urlCache = $this->cacheFactory->newUrlCache();
+        $status = $urlCache->getUrlStatus($this->getShortenedUrl());
+        if (is_null($status)) {
+            $status = $this->getGuzzleClient()->request("GET", $this->getFullUrl(), ['http_errors' => false])->getStatusCode();
+            $urlCache->setUrlStatus($this->getShortenedUrl(), $status);
+        }
+
+        return $status == 200;
+    }
+
+    /**
+     * Getter for Guzzle
+     *
+     * @return Client
+     */
+    public function getGuzzleClient()
+    {
+        return $this->guzzleClient;
     }
 
     /**

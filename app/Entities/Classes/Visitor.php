@@ -64,21 +64,21 @@ class Visitor
     /**
      * @var ModelFactory
      */
-    private $modelFactory;
+    protected $modelFactory;
 
     /**
      * @var Client
      */
-    private $guzzleClient;
+    protected $guzzleClient;
 
     /**
      * Visitor constructor.
-     * @param ModelFactory $ModelFactory
+     * @param ModelFactory $modelFactory
      * @param Client $Client
      */
-    public function __construct(ModelFactory $ModelFactory, Client $Client)
+    public function __construct(ModelFactory $modelFactory, Client $Client)
     {
-        $this->modelFactory = $ModelFactory;
+        $this->modelFactory = $modelFactory;
         $this->guzzleClient = $Client;
     }
 

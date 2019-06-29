@@ -8,7 +8,7 @@ class ModelFactory
     /**
      * @return UrlModel
      */
-    public static function newUrlStaticInstance()
+    public static function newUrlStaticModel()
     {
         return App::make(UrlModel::class);
     }
@@ -16,7 +16,7 @@ class ModelFactory
     /**
      * @return UrlModel
      */
-    public function newUrlInstance()
+    public function newUrlModel()
     {
         return App::make(UrlModel::class);
     }
@@ -32,7 +32,7 @@ class ModelFactory
     /**
      * @return BlockedSiteModel
      */
-    public function newBlockedSite()
+    public function newBlockedSiteModel()
     {
         return App::make(BlockedSiteModel::class);
     }

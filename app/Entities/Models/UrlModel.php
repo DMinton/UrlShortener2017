@@ -41,12 +41,12 @@ class UrlModel extends Model
      * This will locate a url by the hash.
      *
      * @param Query $query
-     * @param string $url
+     * @param string $hashUrl
      * @return Collection
      */
-    public function scopeFindUrlHash($query, $url)
+    public function scopeFindUrlHash($query, $hashUrl)
     {
-        return $query->where('hashUrl', md5($url))->get();
+        return $query->where('hashUrl', $hashUrl)->get();
     }
 
     /**

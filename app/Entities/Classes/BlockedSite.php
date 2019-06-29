@@ -2,19 +2,23 @@
 
 namespace App\Entities\Classes;
 
-use App\Entities\Cache\Cache;
+use App\Entities\Cache\Classes\CacheFactory;
 use App\Entities\Models\BlockedSiteModel;
 use App\Entities\Models\ModelFactory;
 use Illuminate\Support\Collection;
 
 class BlockedSite
 {
-    const CACHE_KEY = "Model:BlockedSite:";
 
     /**
      * @var ModelFactory
      */
     protected $modelFactory;
+
+    /**
+     * @var CacheFactory
+     */
+    protected $cacheFactory;
 
     /**
      * @var Collection
@@ -24,10 +28,12 @@ class BlockedSite
     /**
      * BlockedSite constructor.
      * @param ModelFactory $modelFactory
+     * @param CacheFactory $cacheFactory
      */
-    public function __construct(ModelFactory $modelFactory)
+    public function __construct(ModelFactory $modelFactory, CacheFactory $cacheFactory)
     {
         $this->modelFactory = $modelFactory;
+        $this->cacheFactory = $cacheFactory;
     }
 
     /**
@@ -52,16 +58,17 @@ class BlockedSite
     public function getBlockedSites()
     {
         if (!isset($this->blockedSites)) {
-            $sites = Cache::get(self::CACHE_KEY);
+            $blockedSiteCache = $this->cacheFactory->newBlockedSiteCache();
+            $sites = $blockedSiteCache->getBlockedSites();
             if (!empty($sites)) {
                 $sites = collect($sites);
             }
 
             if (!isset($sites)) {
-                $blockedSite = $this->modelFactory->newBlockedSite();
+                $blockedSite = $this->modelFactory->newBlockedSiteModel();
                 $sites = $blockedSite::getBlockedSites();
 
-                Cache::set(self::CACHE_KEY, $sites);
+                $blockedSiteCache->setBlockedSites($sites);
             }
 
             $this->blockedSites = $sites;

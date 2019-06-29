@@ -24,7 +24,7 @@ class ClassFactory
     /**
      * @return BlockedSite
      */
-    public function newBlockedSite()
+    public function newBlockedSiteInstance()
     {
         return App::make(BlockedSite::class);
     }
