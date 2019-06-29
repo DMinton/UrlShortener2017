@@ -2,6 +2,7 @@
 
 namespace App\Entities\Models;
 
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Model;
 
 /**
@@ -27,7 +28,7 @@ class BlockedSiteModel extends Model
     }
 
     /**
-     * @return BlockedSiteModel[]|\Illuminate\Database\Eloquent\Collection
+     * @return BlockedSiteModel[]|Collection
      */
     public static function getBlockedSites()
     {

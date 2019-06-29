@@ -23,6 +23,7 @@ var vm = new Vue({
         submitUrl: function (event) {
             vm = this;
             vm.errorMessage = '';
+            this.displayUrl = '';
             Vue.nextTick(function () {
 
                 if (!vm.inputUrl.match(/^http([s]?):\/\/.*/)) {

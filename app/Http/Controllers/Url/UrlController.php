@@ -3,8 +3,12 @@
 use App\Entities\Classes\ClassFactory;
 use App\Entities\Models\UrlModel;
 use App\Http\Controllers\Controller;
+use Illuminate\Contracts\View\Factory;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Routing\Redirector;
+use Illuminate\View\View;
 
 class UrlController extends Controller
 {
@@ -35,7 +39,7 @@ class UrlController extends Controller
     /**
      * Landing page
      *
-     * @return \Illuminate\Contracts\View\Factory|\Illuminate\View\View
+     * @return Factory|View
      */
     public function index()
     {
@@ -48,7 +52,7 @@ class UrlController extends Controller
      * not seem valid.
      *
      * @param string $shortened
-     * @return \Illuminate\Contracts\View\Factory|\Illuminate\Http\RedirectResponse|\Illuminate\Routing\Redirector|\Illuminate\View\View
+     * @return Factory|RedirectResponse|Redirector|View
      */
     public function redirect($shortened)
     {
@@ -57,7 +61,7 @@ class UrlController extends Controller
             ->setShortenedUrl($shortened);
 
         // site is blocked, do not redirect
-        if ($this->getClassFactory()->newBlockedSite()->isBlockedSite($url)) {
+        if ($this->getClassFactory()->newBlockedSite()->isBlockedSite($url->getFullUrl())) {
             return redirect()->action('Url\UrlController@index');
         }
 
@@ -135,7 +139,7 @@ class UrlController extends Controller
 
             $topVisits[] = $this->getClassFactory()
                 ->newUrlInstance()
-                ->setFromModel($model);
+                ->setFromObject($model);
 
             if (count($topVisits) >= $number) {
                 break;

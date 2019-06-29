@@ -4,6 +4,7 @@ use App;
 use App\Entities\Models\ModelFactory;
 use GuzzleHttp\Client;
 use Illuminate\Http\Request;
+use stdClass;
 
 class Visitor
 {
@@ -186,7 +187,7 @@ class Visitor
     }
 
     /**
-     * @param \stdClass $jsonResponse
+     * @param stdClass $jsonResponse
      */
     public function setFromJsonResponse($jsonResponse)
     {

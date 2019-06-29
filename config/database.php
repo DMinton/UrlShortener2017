@@ -1,5 +1,13 @@
 <?php
 
+if (getenv('REDIS_URL')) {
+    $url = parse_url(getenv('REDIS_URL'));
+
+    putenv('REDIS_HOST='.$url['host']);
+    putenv('REDIS_PORT='.$url['port']);
+    putenv('REDIS_PASSWORD='.$url['pass']);
+}
+
 return [
 
     /*
@@ -84,10 +92,10 @@ return [
 
     /*
     |--------------------------------------------------------------------------
-    | Redis Databases
+    | RedisCache Databases
     |--------------------------------------------------------------------------
     |
-    | Redis is an open source, fast, and advanced key-value store that also
+    | RedisCache is an open source, fast, and advanced key-value store that also
     | provides a richer set of commands than a typical key-value systems
     | such as APC or Memcached. Laravel makes it easy to dig right in.
     |
@@ -98,6 +106,13 @@ return [
         'client' => 'predis',
 
         'default' => [
+            'host' => env('REDIS_DEFAULT_HOST', '127.0.0.1'),
+            'password' => env('REDIS_DEFAULT_PASSWORD', null),
+            'port' => env('REDIS_DEFAULT_PORT', 6379),
+            'database' => 0,
+        ],
+
+        env('REDIS_NAME') => [
             'host' => env('REDIS_HOST', '127.0.0.1'),
             'password' => env('REDIS_PASSWORD', null),
             'port' => env('REDIS_PORT', 6379),
