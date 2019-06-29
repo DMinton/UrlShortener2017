@@ -16,47 +16,47 @@ class Visitor
     public $id;
 
     /**
-     * @var String
+     * @var string
      */
     public $ip;
 
     /**
-     * @var String
+     * @var string
      */
     public $country;
 
     /**
-     * @var String
+     * @var string
      */
     public $region;
 
     /**
-     * @var String
+     * @var string
      */
     public $city;
 
     /**
-     * @var String
+     * @var string
      */
     public $path;
 
     /**
-     * @var String
+     * @var string
      */
     public $ip_payload;
 
     /**
-     * @var String
+     * @var string
      */
     public $request_payload;
 
     /**
-     * @var String
+     * @var string
      */
     public $created_at;
 
     /**
-     * @var String
+     * @var string
      */
     public $updated_at;
 
@@ -71,6 +71,7 @@ class Visitor
     private $guzzleClient;
 
     /**
+     * Visitor constructor.
      * @param ModelFactory $ModelFactory
      * @param Client $Client
      */
@@ -260,7 +261,7 @@ class Visitor
     /**
      * Get the value of country
      *
-     * @return  String
+     * @return  string
      */
     public function getCountry()
     {
@@ -332,7 +333,7 @@ class Visitor
     /**
      * Get the value of path
      *
-     * @return  String
+     * @return  string
      */
     public function getPath()
     {

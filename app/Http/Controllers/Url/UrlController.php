@@ -123,11 +123,13 @@ class UrlController extends Controller
             ->newUrlInstance()
             ->getMostVisits(100);
 
+        $blockedSites = $this->getClassFactory()->newBlockedSite();
+
         // loop through and set each of the top visits as an object
         $topVisits = array();
         /** @var UrlModel $model */
         foreach ($modelUrls as $model) {
-            if ($this->getClassFactory()->newBlockedSite()->isBlockedSite($model->fullUrl)) {
+            if ($blockedSites->isBlockedSite($model->fullUrl)) {
                 continue;
             }
 
