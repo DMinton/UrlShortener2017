@@ -6,6 +6,8 @@ use App\Entities\Cache\Cache;
 
 class UrlCache
 {
+
+    const CACHE_MOST_VISITED_TTL = 14 * 24 * 60 * 60;
     const CACHE_KEY = __CLASS__ . ":";
 
     /**
@@ -38,7 +40,7 @@ class UrlCache
      */
     public function setMostVisited($mostVisited)
     {
-        return Cache::set($this->getMostVisitedKey(), $mostVisited);
+        return Cache::set($this->getMostVisitedKey(), $mostVisited, self::CACHE_MOST_VISITED_TTL);
     }
 
     /**
