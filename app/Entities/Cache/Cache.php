@@ -22,7 +22,7 @@ class Cache
     }
 
     /**
-     * @return mixed
+     * @return CacheInterface
      */
     protected static function getCache()
     {
@@ -36,10 +36,11 @@ class Cache
     /**
      * @param string $key
      * @param mixed $value
+     * @param int $ttl
      * @return bool
      */
-    public static function set($key, $value)
+    public static function set($key, $value, $ttl = -1)
     {
-        return self::getCache()->set($key, json_encode($value));
+        return self::getCache()->set($key, json_encode($value), $ttl);
     }
 }

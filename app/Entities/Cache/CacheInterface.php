@@ -13,7 +13,8 @@ interface CacheInterface
     /**
      * @param string $key
      * @param mixed $value
+     * @param int $ttl
      * @return bool
      */
-    public function set($key, $value);
+    public function set($key, $value, $ttl);
 }
