@@ -60,13 +60,13 @@ class UrlController extends Controller
             ->newUrlInstance()
             ->setShortenedUrl($shortened);
 
-        // site is blocked, do not redirect
-        if ($this->getClassFactory()->newBlockedSiteInstance()->isBlockedSite($url->getFullUrl())) {
+        // If the url was not found, redirect to main landing page
+        if (!$url->loadByShortenedUrl()) {
             return redirect()->action('Url\UrlController@index');
         }
 
-        // If the url was not found, redirect to main landing page
-        if (!$url->loadByShortenedUrl()) {
+        // site is blocked, do not redirect
+        if ($this->getClassFactory()->newBlockedSiteInstance()->isBlockedSite($url->getFullUrl())) {
             return redirect()->action('Url\UrlController@index');
         }
 

@@ -355,8 +355,15 @@ class Url
         $urlCache = $this->cacheFactory->newUrlCache();
         $status = $urlCache->getUrlStatus($this->getShortenedUrl());
         if (is_null($status)) {
-            $status = $this->getGuzzleClient()->request("GET", $this->getFullUrl(), ['http_errors' => false])->getStatusCode();
-            $urlCache->setUrlStatus($this->getShortenedUrl(), $status);
+            try {
+                $connectionParams = array('http_errors' => false, 'connect_timeout' => 3);
+                $status = $this->getGuzzleClient()->request("GET", $this->getFullUrl(), $connectionParams)->getStatusCode();
+                $urlCache->setUrlStatus($this->getShortenedUrl(), $status);
+            } catch (\Exception $exception) {
+                $status = $exception->getCode() == 200 ? 200 : 500;
+            } catch (\GuzzleHttp\Exception\GuzzleException $exception) {
+                $status = $exception->getCode() == 200 ? 200 : 500;
+            }
         }
 
         return $status == 200;
