@@ -358,12 +358,13 @@ class Url
             try {
                 $connectionParams = array('http_errors' => false, 'connect_timeout' => 3);
                 $status = $this->getGuzzleClient()->request("GET", $this->getFullUrl(), $connectionParams)->getStatusCode();
-                $urlCache->setUrlStatus($this->getShortenedUrl(), $status);
             } catch (\Exception $exception) {
                 $status = $exception->getCode() == 200 ? 200 : 500;
             } catch (\GuzzleHttp\Exception\GuzzleException $exception) {
                 $status = $exception->getCode() == 200 ? 200 : 500;
             }
+
+            $urlCache->setUrlStatus($this->getShortenedUrl(), $status);
         }
 
         return $status == 200;
